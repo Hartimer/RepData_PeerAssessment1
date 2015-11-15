@@ -8,18 +8,77 @@ output:
 
 ## Loading and preprocessing the data
 
+Data data is provided inside the [activity.zip](activity.zip) file.
 
+Note: To extract the contents in Mac OS you my use `$ unzip activity.zip`.
+
+The document is reasonably well formatted, as such, we may loaded it with the appropriate classes before hand:
+
+```{r}
+rawData <- read.csv("activity.csv", colClasses = c("numeric", "Date", "numeric"))
+```
 
 ## What is mean total number of steps taken per day?
 
+The total number of days may be determined as such:
 
+```{r}
+stepsSum <- aggregate(steps ~ date, rawData, sum)
+```
+
+```{r, echo=FALSE}
+barplot(height = stepsSum$steps, width = as.numeric(stepsSum$date), xlab = "Days", ylab = "Total steps", main = "Total steps over time")
+```
+
+Although we use `barplot` to plot the graphic `Total steps over time`, this graph is a histogram over the days the data refers to.
+
+Lets also look at the `mean` and `median`:
+
+```{r}
+stepsMean <- aggregate(steps ~ date, rawData, mean)
+```
+
+```{r, echo=FALSE}
+barplot(height = stepsMean$steps, width = as.numeric(stepsMean$date), xlab = "Days", ylab = "Mean steps", main = "Mean steps over time")
+```
+
+```{r}
+stepsMedian <- aggregate(steps ~ date, rawData, median)
+```
+```{r, echo=FALSE}
+barplot(height = stepsMedian$steps, width = as.numeric(stepsMedian$date), xlab = "Days", ylab = "Median steps", main = "Median steps over time")
+```
+
+We notice that the `median` of the number of steps taken is `0`, which looks rather odd.
 
 ## What is the average daily activity pattern?
 
+The interval frequencies mean is the following:
 
+```{r}
+stepsIntervals <- aggregate(steps ~ interval, rawData, mean)
+```
+
+Visualizing this data as a timeseries we get:
+
+```{r, echo=FALSE}
+barplot(height = stepsIntervals$steps, width = stepsIntervals$interval, xlab = "Interval", ylab = "Mean steps")
+```
+
+Which allows us to also determine the interval of the day with the maximum number of steps on average:
+
+```{r}
+stepsIntervals[stepsIntervals$steps == max(stepsIntervals$steps),]$interval
+```
 
 ## Imputing missing values
 
+The observed results are using unknown data underneath. To assess the number of entries missing data may be determined as such:
 
+```{r}
+length(rawData[is.na(rawData$steps),]$steps)
+```
+
+To fill in the gaps we'll use the mean per interval of the known values.
 
 ## Are there differences in activity patterns between weekdays and weekends?
