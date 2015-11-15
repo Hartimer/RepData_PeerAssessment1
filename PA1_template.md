@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
@@ -14,7 +9,8 @@ Note: To extract the contents in Mac OS you my use `$ unzip activity.zip`.
 
 The document is reasonably well formatted, as such, we may loaded it with the appropriate classes before hand:
 
-```{r}
+
+```r
 rawData <- read.csv("activity.csv", colClasses = c("numeric", "Date", "numeric"))
 ```
 
@@ -22,32 +18,29 @@ rawData <- read.csv("activity.csv", colClasses = c("numeric", "Date", "numeric")
 
 The total number of days may be determined as such:
 
-```{r}
+
+```r
 stepsSum <- aggregate(steps ~ date, rawData, sum)
 ```
 
-```{r, echo=FALSE}
-plot(x = as.numeric(stepsSum$date), y = stepsSum$steps, type = "l", xlab = "Days", ylab = "Total steps", main = "Total steps over time")
-```
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png) 
 
 Although we use `barplot` to plot the graphic `Total steps over time`, this graph is a histogram over the days the data refers to.
 
 Lets also look at the `mean` and `median`:
 
-```{r}
+
+```r
 stepsMean <- aggregate(steps ~ date, rawData, mean)
 ```
 
-```{r, echo=FALSE}
-plot(x = as.numeric(stepsMean$date), y = stepsMean$steps, type = "l", xlab = "Days", ylab = "Mean steps", main = "Mean steps over time")
-```
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
 
-```{r}
+
+```r
 stepsMedian <- aggregate(steps ~ date, rawData, median)
 ```
-```{r, echo=FALSE}
-plot(x = as.numeric(stepsMedian$date), y = stepsMedian$steps, type = "l", xlab = "Days", ylab = "Median steps", main = "Median steps over time")
-```
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
 
 We notice that the `median` of the number of steps taken is `0`, which looks rather odd.
 
@@ -55,33 +48,43 @@ We notice that the `median` of the number of steps taken is `0`, which looks rat
 
 The interval frequencies mean is the following:
 
-```{r}
+
+```r
 stepsIntervals <- aggregate(steps ~ interval, rawData, mean)
 ```
 
 Visualizing this data as a timeseries we get:
 
-```{r, echo=FALSE}
-plot(x = stepsIntervals$interval, y = stepsIntervals$steps, type = "l", xlab = "Interval", ylab = "Mean steps")
-```
+![](PA1_template_files/figure-html/unnamed-chunk-9-1.png) 
 
 Which allows us to also determine the interval of the day with the maximum number of steps on average:
 
-```{r}
+
+```r
 stepsIntervals[stepsIntervals$steps == max(stepsIntervals$steps),]$interval
+```
+
+```
+## [1] 835
 ```
 
 ## Imputing missing values
 
 The observed results are using unknown data underneath. To assess the number of entries missing data may be determined as such:
 
-```{r}
+
+```r
 length(rawData[is.na(rawData$steps),]$steps)
+```
+
+```
+## [1] 2304
 ```
 
 To fill in the gaps we'll use the mean per interval of the known values.
 
-```{r}
+
+```r
 getIntervalMeans <- function(intervalList, intervalMeans) {
   result <- vector()
   for (i in intervalList) {
@@ -95,20 +98,18 @@ rawCopy[is.na(rawCopy$steps),]$steps <- getIntervalMeans(rawCopy[is.na(rawCopy$s
 
 The mean and median now show:
 
-```{r}
+
+```r
 copyMean <- aggregate(steps ~ date, rawCopy, mean)
 ```
 
-```{r, echo=FALSE}
-plot(x = as.numeric(copyMean$date), y = copyMean$steps, type = "l", xlab = "Days", ylab = "Mean steps", main = "Mean steps over time (without NAs)")
-```
+![](PA1_template_files/figure-html/unnamed-chunk-14-1.png) 
 
-```{r}
+
+```r
 copyMedian <- aggregate(steps ~ date, rawCopy, median)
 ```
-```{r, echo=FALSE}
-plot(x = as.numeric(copyMedian$date), y = copyMedian$steps, type = "l", xlab = "Days", ylab = "Median steps", main = "Median steps over time (without NAs)")
-```
+![](PA1_template_files/figure-html/unnamed-chunk-16-1.png) 
 
 We notice that the `mean` is considerably similar. This is due to the fact that we use the original mean as the default value for `NA` entries.
 
@@ -118,17 +119,16 @@ The `median` however shows very different values because now there are many more
 
 Looking at the data based on weekdays and weekends we have the following:
 
-```{r}
+
+```r
 rawCopy$weekday <- ifelse(as.POSIXlt(rawCopy$date)$wday %in% c(0,6), 'weekend', 'weekday')
 ```
 
-```{r}
+
+```r
 weekdayMean <- aggregate(steps ~ interval, rawCopy[rawCopy$weekday == "weekday",], mean)
 weekendMean <- aggregate(steps ~ interval, rawCopy[rawCopy$weekday == "weekend",], mean)
 ```
-```{r, echo=FALSE}
-plot(x = weekdayMean$interval, y = weekdayMean$steps, type = "l", xlab = "Interval", ylab = "Mean steps", main = "Weekdays")
-plot(x = weekendMean$interval, y = weekendMean$steps, type = "l", xlab = "Interval", ylab = "Mean steps", main = "Weekends")
-```
+![](PA1_template_files/figure-html/unnamed-chunk-19-1.png) ![](PA1_template_files/figure-html/unnamed-chunk-19-2.png) 
 
 We can conclude that the subject walked more evenly during the weekend compared to the weekdays
